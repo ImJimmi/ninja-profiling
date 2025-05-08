@@ -5,43 +5,31 @@ from os import getcwd
 
 from log_symbols import LogSymbols
 
-from benchmarking.cmake_ninja_build import cmake_ninja_build
+from profiling.cmake_ninja_build import cmake_ninja_build
 from tracing.ninja_trace import generate_ninja_trace, parse_ninja_trace
 
 
-def profile_hello_world():
-    workspace = f"{getcwd()}/examples/hello-world"
-    cmake_build_dir = "cmake-ninja-build"
-    print(workspace)
-
-    cmake_ninja_build(
-        workspace=workspace,
-        cmake_build_dir=cmake_build_dir,
-    )
-    generate_ninja_trace(workspace=workspace, cmake_build_dir=cmake_build_dir)
-    parse_ninja_trace(workspace=workspace)
-    print()
-
-
-def profile_JUCE():
-    workspace = f"{getcwd()}/examples/JUCE"
-
-    for target in ["DemoRunner", "Projucer"]:
-        print(f"{workspace} - {target}")
-        trace_filename = f"{target}.trace.json"
+def _profile_project(
+    workspace: str,
+    clean: bool,
+    targets: list[str] = ["all"],
+    cmake_generate_args: list[str] = [],
+    filter_out_regexes: list[str] = [],
+):
+    for target in targets:
+        print(f"Profile for `{workspace}` - `{target}`")
 
         cmake_build_dir = f"cmake-ninja-build-{target}"
+        trace_filename = f"{target}.trace.json"
 
-        if not os.path.exists(f"{workspace}/{cmake_build_dir}/.ninja_log"):
+        if clean or not os.path.exists(f"{workspace}/{cmake_build_dir}/.ninja_log"):
             cmake_ninja_build(
                 workspace=workspace,
                 cmake_build_dir=cmake_build_dir,
-                cmake_generate_args=[
-                    "-DJUCE_BUILD_EXTRAS=ON",
-                    "-DJUCE_BUILD_EXAMPLES=ON",
-                ],
-                cmake_target=target,
+                cmake_generate_args=cmake_generate_args,
             )
+        else:
+            print(f"{LogSymbols.WARNING.value} Skipped building")
 
         generate_ninja_trace(
             workspace=workspace,
@@ -51,63 +39,41 @@ def profile_JUCE():
         parse_ninja_trace(
             workspace=workspace,
             trace_filename=trace_filename,
-            filter_out_regexes=[r".*/modules/.*", r".*_binarydata_.*", r".*DemoPIPs.*"],
+            filter_out_regexes=filter_out_regexes,
         )
         print()
 
 
-def profile_Catch():
-    workspace = f"{getcwd()}/examples/Catch2"
+def profile_hello_world(clean: bool):
+    _profile_project(f"{getcwd()}/examples/hello-world", clean)
 
-    print(workspace)
-    trace_filename = "trace.json"
 
-    cmake_build_dir = f"cmake-ninja-build"
-
-    if not os.path.exists(f"{workspace}/{cmake_build_dir}/.ninja_log"):
-        cmake_ninja_build(
-            workspace=workspace,
-            cmake_build_dir=cmake_build_dir,
-            cmake_generate_args=[
-                "-DCATCH_BUILD_EXAMPLES=ON",
-            ],
-        )
-
-    generate_ninja_trace(
-        workspace=workspace,
-        cmake_build_dir=cmake_build_dir,
-        trace_filename=trace_filename,
+def profile_JUCE(clean: bool):
+    _profile_project(
+        f"{getcwd()}/examples/JUCE",
+        clean,
+        targets=["DemoRunner", "Projucer"],
+        cmake_generate_args=[
+            "-DJUCE_BUILD_EXTRAS=ON",
+            "-DJUCE_BUILD_EXAMPLES=ON",
+        ],
+        filter_out_regexes=[r".*/modules/.*", r".*_binarydata_.*", r".*DemoPIPs.*"],
     )
-    parse_ninja_trace(
-        workspace=workspace,
-        trace_filename=trace_filename,
+
+
+def profile_Catch(clean: bool):
+    _profile_project(
+        f"{getcwd()}/examples/Catch2",
+        clean,
+        cmake_generate_args=["-DCATCH_BUILD_EXAMPLES=ON"],
     )
-    print()
 
 
-def profile_Surge():
-    workspace = f"{getcwd()}/examples/Surge"
-
-    print(workspace)
-    trace_filename = "trace.json"
-
-    cmake_build_dir = f"cmake-ninja-build"
-
-    if not os.path.exists(f"{workspace}/{cmake_build_dir}/.ninja_log"):
-        cmake_ninja_build(
-            workspace=workspace,
-            cmake_build_dir=cmake_build_dir,
-            cmake_generate_args=["-DENABLE_LTO=OFF"],
-        )
-
-    generate_ninja_trace(
-        workspace=workspace,
-        cmake_build_dir=cmake_build_dir,
-        trace_filename=trace_filename,
-    )
-    parse_ninja_trace(
-        workspace=workspace,
-        trace_filename=trace_filename,
+def profile_Surge(clean: bool):
+    _profile_project(
+        f"{getcwd()}/examples/Surge",
+        clean,
+        cmake_generate_args=["-DENABLE_LTO=OFF"],
         filter_out_regexes=[
             r".*/modules/.*",
             r".*libs/.*",
@@ -115,94 +81,36 @@ def profile_Surge():
             r".*tests.*",
         ],
     )
-    print()
 
 
-def profile_JIVE():
-    workspace = f"{getcwd()}/examples/JIVE"
-
-    print(workspace)
-    trace_filename = "trace.json"
-
-    cmake_build_dir = f"cmake-ninja-build"
-
-    if not os.path.exists(f"{workspace}/{cmake_build_dir}/.ninja_log"):
-        cmake_ninja_build(
-            workspace=workspace,
-            cmake_build_dir=cmake_build_dir,
-            cmake_generate_args=["-DJIVE_BUILD_DEMO_RUNNER=ON"],
-        )
-
-    generate_ninja_trace(
-        workspace=workspace,
-        cmake_build_dir=cmake_build_dir,
-        trace_filename=trace_filename,
-    )
-    parse_ninja_trace(
-        workspace=workspace,
-        trace_filename=trace_filename,
+def profile_JIVE(clean: bool):
+    _profile_project(
+        f"{getcwd()}/examples/JIVE",
+        clean,
+        cmake_generate_args=["-DJIVE_BUILD_DEMO_RUNNER=ON"],
         filter_out_regexes=[
             r".*/modules/.*",
             r".*_binarydata_.*",
         ],
     )
-    print()
 
 
-def profile_ADC23():
-    workspace = f"{getcwd()}/examples/accessible-juce-app-adc-23"
-
-    print(workspace)
-    trace_filename = "trace.json"
-
-    cmake_build_dir = f"cmake-ninja-build"
-
-    if not os.path.exists(f"{workspace}/{cmake_build_dir}/.ninja_log"):
-        cmake_ninja_build(
-            workspace=workspace,
-            cmake_build_dir=cmake_build_dir,
-        )
-
-    generate_ninja_trace(
-        workspace=workspace,
-        cmake_build_dir=cmake_build_dir,
-        trace_filename=trace_filename,
-    )
-    parse_ninja_trace(
-        workspace=workspace,
-        trace_filename=trace_filename,
+def profile_ADC23(clean: bool):
+    _profile_project(
+        f"{getcwd()}/examples/accessible-juce-app-adc-23",
+        clean,
         filter_out_regexes=[
             r".*/modules/.*",
         ],
     )
-    print()
 
 
-def profile_fmt():
-    workspace = f"{getcwd()}/examples/fmt"
-
-    print(workspace)
-    trace_filename = "trace.json"
-
-    cmake_build_dir = f"cmake-ninja-build"
-
-    if not os.path.exists(f"{workspace}/{cmake_build_dir}/.ninja_log"):
-        cmake_ninja_build(
-            workspace=workspace,
-            cmake_build_dir=cmake_build_dir,
-            cmake_generate_args=["-DFMT_TEST=ON", "-DFMT_FUZZ=ON"],
-        )
-
-    generate_ninja_trace(
-        workspace=workspace,
-        cmake_build_dir=cmake_build_dir,
-        trace_filename=trace_filename,
+def profile_fmt(clean: bool):
+    _profile_project(
+        f"{getcwd()}/examples/fmt",
+        clean,
+        cmake_generate_args=["-DFMT_TEST=ON", "-DFMT_FUZZ=ON"],
     )
-    parse_ninja_trace(
-        workspace=workspace,
-        trace_filename=trace_filename,
-    )
-    print()
 
 
 if __name__ == "__main__":
@@ -247,41 +155,17 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.examples:
-        profile_hello_world()
-        profile_JUCE()
-        profile_Catch()
-        profile_Surge()
-        profile_JIVE()
-        profile_ADC23()
-        profile_fmt()
+        profile_hello_world(args.clean)
+        profile_JUCE(args.clean)
+        profile_Catch(args.clean)
+        profile_Surge(args.clean)
+        profile_JIVE(args.clean)
+        profile_ADC23(args.clean)
+        profile_fmt(args.clean)
     else:
-        for target in args.targets:
-            print(f"{args.workspace} - {target}")
-            trace_filename = f"{target}.trace.json"
-
-            cmake_build_dir = f"cmake-ninja-build-{target}"
-
-            if args.clean or not os.path.exists(
-                f"{args.workspace}/{cmake_build_dir}/.ninja_log"
-            ):
-                cmake_ninja_build(
-                    workspace=args.workspace,
-                    cmake_build_dir=cmake_build_dir,
-                    cmake_generate_args=args.cmake_args,
-                    cmake_target=target,
-                    unity_size=args.unity_size,
-                )
-            else:
-                print(f"{LogSymbols.WARNING.value} Skipped building")
-
-            generate_ninja_trace(
-                workspace=args.workspace,
-                cmake_build_dir=cmake_build_dir,
-                trace_filename=trace_filename,
-            )
-            parse_ninja_trace(
-                workspace=args.workspace,
-                trace_filename=trace_filename,
-                filter_out_regexes=args.filter_out_regexes,
-            )
-            print()
+        _profile_project(
+            args.workspace,
+            args.clean,
+            cmake_generate_args=args.cmake_args,
+            filter_out_regexes=args.filter_out_regexes,
+        )

@@ -2,7 +2,7 @@ import json
 import re
 from datetime import timedelta
 
-from benchmarking.CLI import Step, exec, format_duration, print_info
+from utils.CLI import Step, exec, format_duration, print_info
 
 BLOCKS = [
     " ",
@@ -106,98 +106,3 @@ def parse_ninja_trace(
     print_info(f"Mean:         {format_duration(mean_duration)}")
     print_info(f"Distribution:   |{distribution}|")
     print_info(f"TU Count:       {len(trace)}")
-
-    return
-
-    dirs = [
-        # "actions",
-        # "aes70",
-        # "analytics",
-        # "application",
-        # "device",
-        # "end-to-end",
-        # "fc1-updater",
-        # "gui",
-        # "gui/channel-strips",
-        # "gui/components",
-        # "gui/components/auto-gain-ring",
-        # "gui/components/buttons",
-        "scarlett_TextButton.cpp.o",
-        "scarlett_PrimaryButton.cpp.o",
-        "scarlett_PrimaryLinkButton.cpp.o",
-        "scarlett_SecondaryButton.cpp.o",
-        "scarlett_SecondaryLinkButton.cpp.o",
-        "scarlett_SecondaryRoutingButton.cpp.o",
-        "scarlett_TertiaryButton.cpp.o",
-        "scarlett_ToggleButton.cpp.o",
-        "scarlett_DangerButton.cpp.o",
-        # "gui/components/callout-window",
-        # "gui/components/focus-outline",
-        # "gui/components/menus",
-        # "gui/components/meters",
-        # "gui/components/mix-picker",
-        # "gui/components/navigation-bar",
-        # "gui/components/progress-bar",
-        # "gui/components/routing-list",
-        # "gui/components/sample-rate-warning",
-        # "gui/components/scroll-container",
-        # "gui/components/sliders",
-        # "gui/components/status-indicator",
-        # "gui/components/text-field",
-        # "gui/look-and-feel",
-        # "gui/modal-dialogs",
-        # "gui/notifications",
-        # "gui/pages",
-        # "gui/panels",
-        # "gui/windows",
-        # "localisation",
-        # "model",
-        # "presets",
-        # "restart",
-        # "system-menus",
-    ]
-    longest_dir = max(dirs, key=len)
-
-    for dir in dirs:
-        entry = next(x for x in trace if x["name"].endswith(dir))
-        formatted_filename = f"{dir}:" + " " * (len(longest_dir) - len(dir))
-        print_info(
-            f"{formatted_filename}{format_duration(timedelta(microseconds=float(entry["dur"])))}"
-        )
-
-    total = sum(
-        timedelta(
-            microseconds=float(next(x for x in trace if x["name"].endswith(dir))["dur"])
-        ).total_seconds()
-        for dir in dirs
-    )
-    print_info(
-        f"Total:{' ' * (len(longest_dir) - len('Total'))}{format_duration(timedelta(seconds=total))}"
-    )
-    # entries = [entry for entry in trace if f"{dir}" in entry["name"]]
-
-    # for entry in entries:
-    #     print_info(
-    #         f"{entry["name"]}\t{format_duration(timedelta(microseconds=float(entry["dur"])))}"
-    #     )
-
-    # if len(entries) > 0:
-    #     dir_durations = sorted(
-    #         [
-    #             timedelta(microseconds=float(entry["dur"])).total_seconds()
-    #             for entry in entries
-    #         ]
-    #     )
-    #     min_dir_duration = min(dir_durations)
-    #     max_dir_duration = max(dir_durations)
-    #     mean_dir_duration = timedelta(
-    #         seconds=sum([x for x in dir_durations]) / len(dir_durations)
-    #     )
-    #     median_dir_duration = timedelta(
-    #         seconds=dir_durations[len(dir_durations) // 2]
-    #     )
-    #     print_info(
-    #         f"{dir}: {len(entries)}\t{format_duration(mean_dir_duration)}\t{format_duration(timedelta(seconds=sum(dir_durations)))}"
-    #     )
-    # else:
-    #     print_info(f"{dir}: {len(entries)}")

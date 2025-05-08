@@ -3,8 +3,7 @@ from datetime import timedelta
 from shutil import rmtree as delete_directory
 from typing import Dict
 
-from benchmarking.CLI import Step, exec
-from benchmarking.timing import record_timedelta
+from utils.CLI import Step, exec
 
 CMakeTarget = str
 
