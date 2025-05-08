@@ -1,0 +1,18 @@
+[submodule "examples/JUCE"]
+	path = examples/JUCE
+	url = https://github.com/juce-framework/JUCE.git
+[submodule "examples/Catch2"]
+	path = examples/Catch2
+	url = https://github.com/catchorg/Catch2.git
+[submodule "examples/surge"]
+	path = examples/surge
+	url = https://github.com/surge-synthesizer/surge.git
+[submodule "examples/JIVE"]
+	path = examples/JIVE
+	url = https://github.com/ImJimmi/JIVE.git
+[submodule "examples/accessible-juce-app-adc-23"]
+	path = examples/accessible-juce-app-adc-23
+	url = https://github.com/FocusriteGroup/accessible-juce-app-adc-23.git
+[submodule "examples/fmt"]
+	path = examples/fmt
+	url = https://github.com/fmtlib/fmt.git
